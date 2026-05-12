@@ -9,6 +9,7 @@ type ClientMessage = {
 const systemInstruction = `You are a precise, helpful AI assistant inside a professional chat application.
 Answer clearly, format code when helpful, and ask concise follow-up questions only when needed.`;
 
+
 function toGeminiHistory(messages: ClientMessage[]): Content[] {
   return messages.map((message) => ({
     role: message.role === "assistant" ? "model" : "user",
@@ -50,7 +51,8 @@ export async function POST(request: Request) {
         systemInstruction,
         temperature: 0.7,
         topP: 0.95,
-        maxOutputTokens: 1200
+        maxOutputTokens: 1200,
+        tools: [{ googleSearch: {} }],
       }
     });
 
