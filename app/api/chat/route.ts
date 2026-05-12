@@ -9,6 +9,25 @@ type ClientMessage = {
 const systemInstruction = `You are a precise, helpful AI assistant inside a professional chat application.
 Answer clearly, format code when helpful, and ask concise follow-up questions only when needed.`;
 
+function shouldUseGoogleSearch(input: string): boolean {
+  const realtimeKeywords = [
+    "today",
+    "latest",
+    "current",
+    "news",
+    "weather",
+    "stock",
+    "price",
+    "live",
+    "recent",
+    "2025",
+    "score"
+  ];
+
+  return realtimeKeywords.some((keyword) =>
+    input.toLowerCase().includes(keyword)
+  );
+}
 
 function toGeminiHistory(messages: ClientMessage[]): Content[] {
   return messages.map((message) => ({
@@ -44,15 +63,18 @@ export async function POST(request: Request) {
     }
 
     const ai = new GoogleGenAI({ apiKey });
+
+    const useSearch = shouldUseGoogleSearch(messages[messages.length - 1].content);
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: toGeminiHistory(messages),
+      
       config: {
         systemInstruction,
         temperature: 0.7,
         topP: 0.95,
         maxOutputTokens: 1200,
-        tools: [{ googleSearch: {} }],
+        tools: useSearch ? [{ googleSearch: {} }] : [],
       }
     });
 
